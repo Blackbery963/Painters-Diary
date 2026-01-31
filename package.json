@@ -1,0 +1,17 @@
+{
+  "name": "painters-diary",
+  "version": "1.0.0",
+  "description": "A platform for art creativity and culture...",
+  "keywords": [
+    "creaitvity",
+    "art",
+    "culture"
+  ],
+  "license": "ISC",
+  "author": "Blackberry",
+  "type": " ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
