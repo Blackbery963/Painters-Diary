@@ -1,9 +1,13 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-Playfair: "Playfair Display", serif;
   --font-Eagle: "Eagle Lake", cursive;
 }
+
+
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
 

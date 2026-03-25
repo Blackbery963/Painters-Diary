@@ -17,20 +17,7 @@ export default {
         playfair:['"Playfair Display"', 'serif'],
         
     },
-
-   
     
-    // keyframes:{
-    //   fadeIn:{
-    //     '0%':{scale: '0'},
-    //     '100%': {scale: '1'}
-    //   }
-    // },
-    // animation: {
-    //   fadeIn:' fadeIn 3s ease-in-out',
-    //   pulse: 'pulse 3s ease-in-out infinite',
-    // }
-
     animation: {
       fadeIn: "fadeIn 2s ease-in-out",
       slideInUp: "slideInUp 0.8s ease-out",

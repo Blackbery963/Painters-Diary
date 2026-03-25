@@ -66,7 +66,7 @@ const Sidebar = () => {
   ];
   const bottomItems = [
     { id: "help", label: "Help", icon: HelpCircle, path: "/Resources/Help" },
-    { id: "settings", label: "Settings", icon: Settings, path: "/Settings/Settings" },
+    { id: "settings", label: "Settings", icon: Settings, path: "/Settings" },
   ];
 
   useEffect(() => {

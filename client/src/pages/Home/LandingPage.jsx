@@ -9,8 +9,8 @@ import {
   BookOpen,
   Sparkles
 } from 'lucide-react';
-import Sidebar from '../../Home/components/Sidebar';
-import Header from '../../Home/components/Header';
+import Sidebar from './Components/Sidebar';
+import Header from './Components/Header';
 
 export default function LandingPage() {
   // Reusable animation variants

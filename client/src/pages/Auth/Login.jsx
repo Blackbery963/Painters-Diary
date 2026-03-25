@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, LogIn, Sparkles, AlertCircle } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
+import axios from 'axios';
 
 import Background from '../../assets/Login.jpg'
 import logo from '../../assets/Logo.jpeg'
@@ -30,40 +31,49 @@ const Login = () => {
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    
-    // --- THIS IS THE FIX FOR SONNER ---
-    // We check if the fields are empty and trigger the Sonner toast!
-    if (!formData.email.trim()) {
-      toast.error('Please enter your email address to log in.');
-      return; // Stops the function from continuing
-    }
-    
-    if (!formData.password) {
-      toast.error('Please provide your password.');
-      return; // Stops the function from continuing
-    }
+  e.preventDefault();
 
-    setIsLoading(true);
-    setError('');
+  if (!formData.email.trim()) {
+    toast.error('Please enter your email address to log in.');
+    return;
+  }
 
-    try {
-      // Simulated network request
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
+  if (!formData.password) {
+    toast.error('Please provide your password.');
+    return;
+  }
 
-      // Simulated success block
-      toast.success('Welcome back to your studio!');
-      navigate('/Account');
+  setIsLoading(true);
+  setError('');
 
-    } catch (err) {
-      console.error('Login error:', err);
-      let errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    const response = await axios.post(
+      "http://localhost:3000/api/auth/login",
+      {
+        email: formData.email,
+        password: formData.password
+      },
+      {
+        withCredentials: true
+      }
+    );
+
+    toast.success(response.data.message);
+
+    localStorage.setItem("accessToken", response.data.accessToken);
+
+    navigate('/account');
+
+  } catch (err) {
+    const errorMessage =
+      err.response?.data?.message || "Login failed. Please try again.";
+
+    setError(errorMessage);
+    toast.error(errorMessage);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const contentVariants = {
     hidden: { opacity: 0, y: 20 },

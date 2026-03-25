@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 
-import logo from "../../assets/Logo.jpeg";
+import logo from "../../../assets/Logo.jpeg";
 
 import {
   Bell, Bookmark, Box, ChartColumnIncreasing, HelpCircle, LogIn, LogOut,
@@ -150,7 +150,7 @@ const Header = () => {
 
               {/* Desktop */}
               <div className="hidden lg:flex items-center gap-2">
-                <Link to="/account/upload">
+                <Link to="/upload">
                   <motion.button
                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     className="
@@ -401,7 +401,6 @@ const Header = () => {
             </motion.div>
           )}
         </AnimatePresence>
-
       </motion.nav>
     </div>
   );
