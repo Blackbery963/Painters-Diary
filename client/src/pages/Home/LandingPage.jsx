@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
+import Hero from './Components/Hero';
 
 export default function LandingPage() {
   // Reusable animation variants
@@ -29,31 +30,12 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-900 selection:text-white dark:selection:bg-white dark:selection:text-black overflow-x-hidden transition-colors duration-300">
-      
-      {/* Navbar (Transparent & Minimal) */}
-      {/* <nav className="absolute top-0 w-full z-50 pt-6 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="bg-zinc-900 dark:bg-white p-1.5 rounded-md transition-transform group-hover:scale-105">
-              <ImageIcon className="w-5 h-5 text-white dark:text-black" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-zinc-900 dark:text-white">
-              Painters' Diary
-            </span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8 font-semibold text-sm uppercase tracking-wider">
-            <Link to="/journal" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">Diary</Link>
-            <Link to="/about" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">About</Link>
-            <Link to="/auth/login" className="text-zinc-900 dark:text-white hover:text-zinc-500 dark:hover:text-zinc-300 transition-colors">Log In</Link>
-          </div>
-        </div>
-      </nav> */}
       <Header />
-
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 lg:pt-56 lg:pb-32 px-6 lg:px-12 flex flex-col items-center text-center">
+      <section className="relative  pb-20 lg:pt-56 lg:pb-32 px-6 lg:px-12 flex flex-col items-center text-center">
         <Sidebar/>
-        <motion.div 
+        <Hero/>
+        {/* <motion.div 
           initial="hidden" animate="visible" variants={fadeUp}
           className="max-w-4xl mx-auto z-10"
         >
@@ -82,7 +64,7 @@ export default function LandingPage() {
               Explore Gallery
             </Link>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Hero Background Image - Grayscaled */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30 dark:opacity-20 pointer-events-none">
@@ -94,6 +76,7 @@ export default function LandingPage() {
           />
         </div>
       </section>
+        
 
       {/* Bento Grid Features Section */}
       <section className="py-24 px-6 lg:px-12 max-w-7xl mx-auto">
@@ -192,3 +175,7 @@ export default function LandingPage() {
     </div>
   );
 }
+
+
+
+

@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import * as authController from "../controller/register.controller.js"
+import * as authController from "../controller/auth.controller.js"
 
 const authRouter = Router()
  
@@ -14,5 +14,13 @@ authRouter.get("/refresh-token", authController.refreshToken)
 
 //post /api/auth/login
 authRouter.post("/login", authController.login);
+
+//post /api/auth/verify-email
+authRouter.post("/verify-email", authController.verifyEmail)
+
+//post /api/auth/resendOTP
+
+authRouter.post("/resend-otp", authController.resendOTP)
+
 
 export default authRouter;

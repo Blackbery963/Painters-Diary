@@ -1,22 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, ArrowRight, RotateCcw, ShieldCheck, Sparkles } from 'lucide-react';
+import { Mail, ArrowRight, RotateCcw, ShieldCheck, Sparkles, Import } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
 import backgroundImage from '../../assets/EmailVerification.jpg'; 
 import logo from '../../assets/Logo.jpeg';
 
+// Replace with your actual backend URL, or use import.meta.env.VITE_API_URL
+// const API_URL = 'http://localhost:3000/api/auth';
+const API_URL = import.meta.env.VITE_BASE_URL
+
 const EmailVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email || "artist@example.com";
+  const email = location.state?.email; 
   
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef([]);
 
+  // Safety check: If they land here without an email in state, send them back to register
+  useEffect(() => {
+    if (!email) {
+      toast.error("No email found. Please register first.");
+      navigate('/register'); 
+    }
+  }, [email, navigate]);
+
+  // Handle the countdown timer
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => setTimer(prev => prev - 1), 1000);
@@ -24,23 +38,29 @@ const EmailVerification = () => {
     }
   }, [timer]);
 
+  // Handle individual OTP input changes
   const handleChange = (index, value) => {
     if (isNaN(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
 
+    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
   };
 
+  // Handle backspace to focus previous input
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1].focus();
     }
   };
 
+  // ==========================================
+  // API INTEGRATION: VERIFY OTP
+  // ==========================================
   const handleVerify = async (e) => {
     e.preventDefault();
     const code = otp.join('');
@@ -52,24 +72,71 @@ const EmailVerification = () => {
 
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
-      toast.success("Identity Verified!");
-      navigate('/Account');
+      const response = await fetch(`${API_URL}/api/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: code }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Verification failed");
+      }
+
+      // Success! Save the token (Update your AuthContext here if you have one)
+      localStorage.setItem('accessToken', data.accessToken);
+      
+      toast.success("Identity Verified! Welcome to your diary.");
+      navigate('/profile'); 
+
     } catch (err) {
-      toast.error("Invalid code.");
+      toast.error(err.message || "Invalid code. Please try again.");
+      setOtp(['', '', '', '', '', '']); // Clear inputs on failure
+      inputRefs.current[0].focus();
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ==========================================
+  // API INTEGRATION: RESEND OTP
+  // ==========================================
+  const handleResendOTP = async () => {
+    if (timer > 0 || isResending) return;
+
+    setIsResending(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/resend-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message);
+
+      toast.success("A new code has been sent to your email!");
+      setTimer(60);
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0].focus();
+
+    } catch (err) {
+      toast.error(err.message || "Failed to resend code.");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  // If there's no email, don't render the component to prevent errors before the redirect fires
+  if (!email) return null;
+
   return (
     <div className="min-h-screen lg:h-screen bg-gray-50 dark:bg-gray-950 font-['Quicksand'] flex flex-col lg:flex-row overflow-x-hidden">
       <Toaster position="top-center" richColors theme='system' />
 
-      {/* SECTION 1: DYNAMIC IMAGE BOX 
-          Mobile: 35vh height
-          Desktop: 100vh height (h-full)
-      */}
+      {/* SECTION 1: DYNAMIC IMAGE BOX */}
       <div className="w-full lg:w-1/2 h-[35vh] lg:h-full relative bg-gray-900 shrink-0">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-60 transition-transform duration-[20s] hover:scale-105"
@@ -77,7 +144,6 @@ const EmailVerification = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-black/40" />
         
-        {/* Branding on Image */}
         <div className="relative z-10 p-6 lg:p-16 flex flex-col justify-center items-center lg:items-start h-full text-white">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-[#1f7d53] p-1 rounded-lg h-10 w-10 flex items-center justify-center overflow-hidden">
@@ -97,10 +163,7 @@ const EmailVerification = () => {
         </div>
       </div>
 
-      {/* SECTION 2: CONTENT AREA
-          Mobile: Overlaps image slightly with rounded-t
-          Desktop: Flat split-screen (rounded-none)
-      */}
+      {/* SECTION 2: CONTENT AREA */}
       <div className="w-full lg:w-1/2 flex flex-col relative z-20 -mt-10 lg:mt-0">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -146,7 +209,7 @@ const EmailVerification = () => {
                   type="submit"
                   disabled={isLoading}
                   className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg shadow-[#1f7d53]/30 flex items-center justify-center gap-3 transition-all ${
-                    isLoading ? 'bg-gray-400' : 'bg-[#1f7d53] hover:bg-[#186642]'
+                    isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#1f7d53] hover:bg-[#186642]'
                   }`}
                 >
                   {isLoading ? (
@@ -159,14 +222,14 @@ const EmailVerification = () => {
                 <div className="text-center">
                   <button
                     type="button"
-                    disabled={timer > 0}
-                    onClick={() => setTimer(60)}
+                    disabled={timer > 0 || isResending}
+                    onClick={handleResendOTP}
                     className={`text-xs flex items-center justify-center gap-2 mx-auto font-bold transition-colors ${
-                      timer > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-[#1f7d53] hover:underline'
+                      (timer > 0 || isResending) ? 'text-gray-400 cursor-not-allowed' : 'text-[#1f7d53] hover:underline'
                     }`}
                   >
-                    <RotateCcw className={`w-3.5 h-3.5 ${timer > 0 ? '' : 'animate-spin-slow'}`} />
-                    {timer > 0 ? `Resend in ${timer}s` : "Resend code"}
+                    <RotateCcw className={`w-3.5 h-3.5 ${timer > 0 || isResending ? '' : 'animate-spin-slow'}`} />
+                    {isResending ? 'Sending...' : (timer > 0 ? `Resend in ${timer}s` : "Resend code")}
                   </button>
                 </div>
               </div>

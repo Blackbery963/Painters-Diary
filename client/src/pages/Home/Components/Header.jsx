@@ -95,7 +95,7 @@ const Header = () => {
   }, []);
 
   const routes = [
-    { label: "Profile",   path: "/account",            icon: User },
+    { label: "Profile",   path: "/profile",            icon: User },
     { label: "Dashboard", path: "/Account/Dashboard",  icon: ChartColumnIncreasing },
     { label: "Studio",    path: "/studio-manager",     icon: SlidersHorizontal },
     { label: "Saved",     path: "/Saved",              icon: Bookmark },
