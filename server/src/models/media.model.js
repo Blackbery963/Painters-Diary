@@ -33,19 +33,19 @@ const mediaSchema = new Schema({
         type: String,
         lowercase: true,
         trim: true,
-        undex:true
+        index:true
     }],
     styleTags:[{
         type: String,
         lowercase: true,
         trim: true,
-        undex:true
+        index:true
     }],
     generalTags:[{
         type: String,
         lowercase: true,
         trim: true,
-        undex:true
+        index:true
     }],
 
     visibility: { type: String, enum: ["public", "followers", "private"], default: "public" },
@@ -63,7 +63,7 @@ const mediaSchema = new Schema({
         default: "INR" 
     },
 
-    isAwarded: { type: Boolean, default: false },
+    isAwardWinning: { type: Boolean, default: false },
     isFeatured:{ type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false }, // Removed standalone index
 

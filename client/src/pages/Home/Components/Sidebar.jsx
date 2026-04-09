@@ -52,7 +52,8 @@ const Sidebar = () => {
   const mainNavItems = [
     { id: "explore", label: "Explore", icon: Compass, path: "/" },
     { id: "search", label: "Search", icon: Search, path: "/search" },
-    { id: "moments", label: "Moments", icon: Play, path: "/moments" },
+    // { id: "moments", label: "Moments", icon: Play, path: "/moments" },
+    { id: "artstore", label: "Art Store", icon: ShoppingBag, path: "/Arteva/Artstore" },
     { id: "artist", label: "Artist", icon: UserPlus, path: "/Artists/DiscoverUsers" },
     { id: "diary", label: "Diary", icon: Album, path: "/journal" },
   ];
@@ -60,7 +61,6 @@ const Sidebar = () => {
     { id: "gallery", label: "Gallery", icon: Grid, path: "/gallery" },
     { id: "community", label: "Community", icon: Users, path: "/community" },
     { id: "categories", label: "Categories", icon: LayoutGrid, path: "/category" },
-    { id: "artstore", label: "Art Store", icon: ShoppingBag, path: "/Arteva/Artstore" },
     { id: "resources", label: "Resources", icon: Blocks, path: "/Community/Resources/Hub" },
     { id: "save", label: "Saved", icon: Bookmark, path: "/saved" },
   ];

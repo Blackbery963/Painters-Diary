@@ -1,75 +1,155 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import { useEffect, useState, useCallback } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+// Common
+import Preloader from "./components/common/Preloader";
+import OfflinePage from "./components/common/Offline";
 
-//Authentication Pages
-import Signup from './pages/Auth/Signup'
-import Login from './pages/Auth/Login'
-import EmailVerification from './pages/Auth/EmailVerification'
-import ResetPassword from './pages/Auth/ResetPassword'
-import ForgotPassword from './pages/Auth/ForgotPassword'
+// Pages
+import LandingPage from "./pages/Home/LandingPage";
 
-// For the main profile page and components
-import Profile from './pages/Profile/Profile'
+// for authentication 
+import Signup from "./pages/Auth/Signup";
+import Login from "./pages/Auth/Login";
+import EmailVerification from "./pages/Auth/EmailVerification";
+import ResetPassword from "./pages/Auth/ResetPassword";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import Enable2FA from "./pages/Auth/2fa/Enable2FA";
 
-// For Uploading images and other media
-import Upload from './pages/Upload/Upload'
+// important pages
+import Profile from "./pages/Profile/Profile";
+import EditProfile from "./pages/Profile/EditProfile/EditProfile";
 
-// For the main settings page and components 
-import Settings from './pages/Settings/Settings'
+import Upload from "./pages/Upload/Upload";
+import Settings from "./pages/Settings/Settings";
 
+// legal pages
+import FAQs from "./pages/Legal/FAQs";
+import Help from "./pages/Legal/Help";
+import TermsAndConditions from "./pages/Legal/TermsAndConditions";
+import CookiePolicy from "./pages/Legal/Cookies";
+import SecurityPolicy from "./pages/Legal/ScurityPolicy";
+import About from "./pages/Legal/About";
 
+import ProtectedRoute from "./middleware/ProtectedRoute.middleware";
 
-// Importing the legal pages
-import FAQs from './pages/Legal/FAQs'
-import Help from './pages/Legal/Help'
-import TermsAndConditions from './pages/Legal/TermsAndConditions'
-import CookiePolicy from './pages/Legal/Cookies'
-import SecurityPolicy from './pages/Legal/ScurityPolicy'
-import LandingPage from './pages/Home/LandingPage'
-import About from './pages/Legal/About'
+// ─── Connection quality check ─────────────────────────────────────────────────
+// Pings a tiny resource and measures round-trip time.
+// Returns: "online" | "slow" | "offline"
+async function measureConnection() {
+  try {
+    const start = Date.now();
 
+    // Cache-busted tiny fetch — won't hit your own server at all
+    await fetch(`https://www.gstatic.com/generate_204?_=${Date.now()}`, {
+      method: "HEAD",
+      mode: "no-cors",
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000), // give up after 5 s
+    });
 
-function App() {
+    const ms = Date.now() - start;
+    if (ms > 2000) return "slow";   // reachable but painfully slow
+    return "online";
+  } catch {
+    return "offline";
+  }
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // "online" | "slow" | "offline"
+  const [connStatus, setConnStatus] = useState("online");
+
+  // ── Initial preloader (2 s) ──────────────────────────────────────────────
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ── Connection detection ─────────────────────────────────────────────────
+  const checkConnection = useCallback(async () => {
+    // navigator.onLine is unreliable (stays true on captive portals / airplane
+    // mode on some OSes), so we always follow up with a real ping.
+    if (!navigator.onLine) {
+      setConnStatus("offline");
+      return;
+    }
+    const quality = await measureConnection();
+    setConnStatus(quality);
+  }, []);
+
+  useEffect(() => {
+    // Run once on mount
+    checkConnection();
+
+    // Browser online/offline events
+    const handleOnline  = () => checkConnection(); // re-ping, don't trust the event alone
+    const handleOffline = () => setConnStatus("offline");
+
+    window.addEventListener("online",  handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    // Poll every 30 s to catch slow / flaky connections between events
+    const poll = setInterval(checkConnection, 30_000);
+
+    return () => {
+      window.removeEventListener("online",  handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      clearInterval(poll);
+    };
+  }, [checkConnection]);
+
+  // ── Render gates ─────────────────────────────────────────────────────────
+
+  // 1. Always show preloader first (before any network check matters)
+  if (isLoading) return <Preloader />;
+
+  // 2. Offline or airplane mode → full offline page
+  if (connStatus === "offline") return <OfflinePage status="offline" onRetry={checkConnection} />;
+
+  // 3. Slow connection → same offline page but with "slow" variant
+  //    (OfflinePage should handle the `status` prop to show the right message)
+  if (connStatus === "slow") return <OfflinePage status="slow" onRetry={checkConnection} />;
+
+  // 4. Normal — render the app
   return (
     <Router>
       <Routes>
-        <Route
-        path='/'
-        element={
-          <LandingPage/>
-          // <Home/>
-        }
-        />
+        <Route path="/"                          element={<LandingPage />} />
+        
+        {/* Auth */}
 
-        {/* Authentication Routes */}
-        <Route path='/auth/signup' element={<Signup/>}/>
-        <Route path='/auth/login' element={<Login/>}/>
-        <Route path='/auth/email-verification' element={<EmailVerification/>}/>
-        <Route path='/auth/reset-password' element={<ResetPassword/>}/>
-        <Route path='/auth/forgot-password' element={<ForgotPassword/>}/>
-
-        {/* Profile Routes */}
-        <Route path='/profile' element={<Profile/>}/>
-
-        {/* For the main settings components  */}
-        <Route path='/settings' element={<Settings/>}/>
-
-        {/* For the main upload pages */}
-        <Route path='/upload' element={<Upload/>}/>
+        <Route path="/auth/signup"               element={<Signup />} />
+        <Route path="/auth/login"                element={<Login />} />
+        <Route path="/auth/email-verification"   element={<EmailVerification />} />
+        <Route path="/auth/reset-password"       element={<ResetPassword />} />
+        <Route path="/auth/forgot-password"      element={<ForgotPassword />} />
+        <Route path="/auth/2fa/enable2fa"        element={<Enable2FA />} />
 
 
-        {/* Legal Pages */}
-        <Route path='/About' element={<About/>}/>
-        <Route path='/Legal/FAQs' element={<FAQs/>}/>
-        <Route path='/Legal/Help' element={<Help/>}/>
-        <Route path='/Legal/TermsAndConditions' element={<TermsAndConditions/>}/>
-        <Route path='/Legal/PrivacyPolicy' element={<SecurityPolicy/>}/>
-        <Route path='/Legal/Cookies' element={<CookiePolicy/>}/>
+        < Route element = {<ProtectedRoute/>}>
+        {/* App */}
+        <Route path="/profile"                   element={<Profile />} />
+        <Route path="/profile/edit"              element={<EditProfile />} />
 
+        <Route path="/settings"                  element={<Settings />} />
+        <Route path="/upload"                    element={<Upload />} />
 
+        {/* Legal */}
+        <Route path="/about"                     element={<About />} />
+        <Route path="/legal/faqs"                element={<FAQs />} />
+        <Route path="/legal/help"                element={<Help />} />
+        <Route path="/legal/terms"               element={<TermsAndConditions />} />
+        <Route path="/legal/privacy"             element={<SecurityPolicy />} />
+        <Route path="/legal/cookies"             element={<CookiePolicy />} />
+        </Route>
       </Routes>
     </Router>
-  )
+  );
 }
-export default App
+
+
+

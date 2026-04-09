@@ -207,7 +207,7 @@ const Header = () => {
 
               {/* Mobile */}
               <div className="lg:hidden flex items-center gap-0.5">
-                <Link to="/account/upload">
+                <Link to="/upload">
                   <IconButton icon={Plus} />
                 </Link>
                 <IconButton

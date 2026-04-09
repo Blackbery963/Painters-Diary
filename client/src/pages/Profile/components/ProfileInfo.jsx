@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Camera, MoreVertical, CheckCircle2, MapPin, Calendar, Link2, X, UserPen, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+
+
 
 export default function SidebarProfile({ profileData }) {
   const [showModal, setShowModal] = useState(false);
@@ -60,14 +63,19 @@ export default function SidebarProfile({ profileData }) {
 
       {/* Action Buttons */}
       <div className="w-full flex gap-3 mt-6">
+        <Link to={'/profile/edit'}>
         <button className="flex-1 bg-zinc-900 px-2 text-white dark:bg-white dark:text-black font-semibold py-2.5 rounded-lg text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
           <UserPen/>
           Edit Profile
         </button>
+        </Link>
+        
+        <Link to={'/upload'}>
         <button className="flex-1 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-semibold py-2.5 rounded-lg text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2">
           <Plus/>
           Post
         </button>
+        </Link>
       </div>
 
       {/* MORE INFO MODAL */}

@@ -60,9 +60,9 @@ const Login = () => {
 
     toast.success(response.data.message);
 
-    localStorage.setItem("accessToken", response.data.accessToken);
+    // localStorage.setItem("accessToken", response.data.accessToken);
 
-    navigate('/account');
+    navigate('/auth/2fa/Enable2FA');
 
   } catch (err) {
     const errorMessage =

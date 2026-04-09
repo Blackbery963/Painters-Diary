@@ -387,8 +387,8 @@ function setRefreshCookie(res, token) {
   res.cookie("refreshToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: Number(process.env.REFRESH_TOKEN_MAXAGE) || 7 * 24 * 60 * 60 * 1000,
+    sameSite: "lax", // "strict" is more secure but can cause issues with some cross-origin setups
+    maxAge: Number(process.env.REFRESH_TOKEN_MAXAGE) || 15 * 24 * 60 * 60 * 1000,
   });
 }
 
@@ -397,7 +397,7 @@ function clearRefreshCookie(res) {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax",
   });
 }
 
@@ -593,7 +593,7 @@ export async function resendOTP(req, res) {
   try {
     const { email } = req.body; // ← OTP must NOT come from the client here
 
-    // ── 1. Validate ──────────────────────────────────────────────────────
+    // ── 1. Validate ─────────────────────────── ───────────────────────────
     if (!email?.trim()) {
       return res.status(400).json({ message: "Email is required" });
     }
@@ -620,6 +620,8 @@ export async function resendOTP(req, res) {
     //   remainingMs  = otpExpiry - now
     //   age of OTP   = 10 min - remainingMs
     //   block if age < 60 s  →  remainingMs > 9 min  →  remainingMs > 540_000 ms
+
+    
     const COOLDOWN_MS = 60 * 1000;       // 60 seconds between resends
     const OTP_LIFETIME_MS = 10 * 60 * 1000; // must match what you set on generate
 
@@ -721,7 +723,7 @@ export async function getUser(req, res) {
 
 /**
  * 🔄 REFRESH TOKEN
- * POST /api/auth/refresh
+ * POST /api/auth/refresh-token
  *
  * Silently issues a new access token when the old one expires.
  * Rotates the refresh token on every call (prevents replay attacks).
@@ -731,6 +733,7 @@ export async function getUser(req, res) {
  *   - DB check ensures the token hasn't been invalidated (logout, ban, etc.)
  *   - Old refresh token is replaced atomically
  */
+
 export async function refreshToken(req, res) {
   try {
     // ── 1. Read from cookie ──────────────────────────────────────────────
@@ -757,9 +760,9 @@ export async function refreshToken(req, res) {
       return res.status(403).json({
         message: "Refresh token reuse detected. Please log in again.",
       });
-    }
+    };
 
-    // ── 4. Rotate tokens ─────────────────────────────────────────────────
+    // ── 4. Rotate tokens ─────────────────────────────────────────────
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
     user.refreshToken = newRefreshToken;
@@ -771,6 +774,7 @@ export async function refreshToken(req, res) {
       message: "Tokens refreshed successfully",
       accessToken,
     });
+
   } catch (error) {
     console.error("[refreshToken]", error);
     return res.status(500).json({ message: "Server error", error: error.message });
@@ -778,21 +782,18 @@ export async function refreshToken(req, res) {
 }
 
 
+
 /**
- * 🔐 LOGIN
- * POST /api/auth/login
+ * 🔐 UPDATED LOGIN — 2FA-aware
+ * Paste this over your existing login() in auth.controller.js
  *
- * Flow:
- *   1. Validate fields
- *   2. Find user by email (case-insensitive)
- *   3. Compare password
- *   4. Issue tokens, persist refresh token, set cookie
- *
- * Security:
- *   - Generic "Invalid credentials" message regardless of which check failed
- *   - Constant-time comparison via bcrypt (prevents timing attacks)
- *   - Password field excluded from default select — must be explicitly included
+ * Changes from your original:
+ *   1. Blocks unverified emails from logging in
+ *   2. When 2FA is enabled, issues a short-lived "pre-2fa" token instead of
+ *      a full access token, and tells the client to hit /2fa/validate next
  */
+
+
 export async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -802,13 +803,12 @@ export async function login(req, res) {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // ── 2. Find user (include password for comparison) ───────────────────
+    // ── 2. Find user ─────────────────────────────────────────────────────
     const user = await User.findOne({
       email: email.trim().toLowerCase(),
     }).select("+password +refreshToken");
 
-    // ── 3. Verify credentials ────────────────────────────────────────────
-    // Run bcrypt.compare even if user is null to prevent timing attacks
+    // ── 3. Verify credentials (timing-attack safe) ───────────────────────
     const dummyHash = "$2b$12$invalidhashpaddingtomakethislong.enough.padding";
     const isValid = user
       ? await bcrypt.compare(password, user.password)
@@ -818,12 +818,36 @@ export async function login(req, res) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // ── 4. Tokens ────────────────────────────────────────────────────────
-    const { accessToken, refreshToken } = generateTokens(user);
+    // ── 4. Email verification gate ───────────────────────────────────────
+    // SECURITY FIX: unverified accounts should not receive tokens
+    if (!user.isVerified) {
+      return res.status(403).json({
+        message: "Please verify your email before logging in",
+        requiresVerification: true,
+      });
+    }
 
+    // ── 5. 2FA gate ──────────────────────────────────────────────────────
+    // If 2FA is active, don't issue a full token yet.
+    // Return a short-lived "pre-2fa" token scoped only for /2fa/validate.
+    if (user.twoFactorEnabled) {
+      const pre2faToken = jwt.sign(
+        { _id: user._id, scope: "2fa" },   // narrow scope — can't be used elsewhere
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "5m" }                 // expires quickly
+      );
+
+      return res.status(200).json({
+        message: "OTP required",
+        requires2FA: true,
+        pre2faToken,   // client sends this as Bearer on POST /2fa/validate
+      });
+    }
+
+    // ── 6. Issue full tokens ─────────────────────────────────────────────
+    const { accessToken, refreshToken } = generateTokens(user);
     user.refreshToken = refreshToken;
     await user.save();
-
     setRefreshCookie(res, refreshToken);
 
     return res.status(200).json({
@@ -833,6 +857,7 @@ export async function login(req, res) {
         username: user.username,
         email: user.email,
         isVerified: user.isVerified,
+        twoFactorEnabled: user.twoFactorEnabled,
       },
       accessToken,
     });
@@ -844,7 +869,6 @@ export async function login(req, res) {
     });
   }
 }
-
 
 
 /**
@@ -859,6 +883,7 @@ export async function login(req, res) {
  * Responds 200 even if the token was already gone — logout should always
  * "succeed" from the client's perspective.
  */
+
 export async function logout(req, res) {
   try {
     const token = req.cookies?.refreshToken;

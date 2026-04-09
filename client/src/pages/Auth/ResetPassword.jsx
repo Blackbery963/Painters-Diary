@@ -256,7 +256,7 @@ const ResetPassword = () => {
       // TODO: await API.post('/auth/reset-password', { email, otp: otp.join(''), oldPassword, newPassword });
       await new Promise(r => setTimeout(r, 1500));
       setStep(5);
-      setTimeout(() => navigate('/authentication/login'), 4000);
+      setTimeout(() => navigate('/auth/login'), 4000);
     } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {

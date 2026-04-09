@@ -5,6 +5,7 @@
  * and Step 2 (Details), fires important toast notifications, and manages 
  * the final simulated API submission.
  */
+
 import React, { useState, useRef } from 'react';
 import { ChevronRight, ChevronLeft, Trash2, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -13,7 +14,9 @@ import { toast, Toaster } from 'sonner';
 import MediaEditor from './Components/MediaEditor';
 import DetailsStep from './Components/DetailsStep';
 import MediaStep from './Components/MediaStep';
+import { useAuth } from '../../context/Auth.context';
 import { FILTER_PRESETS, MAX_TAGS, SUGGESTED_TAGS } from './Components/constants';
+import axios from 'axios';
 
 const Upload = () => {
   const [step, setStep] = useState(1);
@@ -68,24 +71,67 @@ const Upload = () => {
     setStep(2);
   };
 
-  const handlePublish = () => {
+
+const { accessToken } = useAuth();
+
+const handlePublish = async () => {
+  try {
+    if (!accessToken) throw new Error("Not logged in");
+
+    // Validation
+    if (files.length === 0) {
+      toast.error("Upload at least one artwork!");
+      return;
+    }
     if (!formData.title.trim()) {
       toast.error("Every masterpiece needs a title!");
       return;
     }
+
+    const uploadData = new FormData();
+   
+    uploadData.append("title",          formData.title);
+    uploadData.append("description",    formData.description);
+    uploadData.append("isForSale",      String(formData.isForSale));
+    uploadData.append("isAwardWinning", String(formData.isAwardWinning));
+    uploadData.append("price",          String(formData.price || 0));
+    uploadData.append("tags",           JSON.stringify(formData.tags));
+   
+    files.forEach((f) => uploadData.append("media", f.file));
+   
+    // 1. PERFECT AXIOS SYNTAX: axios.post(URL, DATA, CONFIG)
+    // (Note: Double check if your backend is on port 3000 or 5000!)
+    const res = await axios.post("http://localhost:3000/api/upload/create", 
+      uploadData, // The FormData goes directly here as the 2nd argument
+      {
+        headers: { 
+          Authorization: `Bearer ${accessToken}` 
+          // Note: Axios automatically sets 'Content-Type: multipart/form-data' 
+          // for you when it sees a FormData object. Do not set it manually!
+        }
+      }
+    );
+   
+    // 2. Fetch leftovers removed! Axios already checked for errors and parsed the JSON.
+    const result = res.data; 
     
-    // Simulated API Call Demo
-    toast.promise(new Promise(resolve => setTimeout(resolve, 2500)), {
-      loading: 'Publishing your masterpiece to Painters\' Diary...',
-      success: () => {
-        setFiles([]);
-        setFormData({ title: '', description: '', price: '', isForSale: false, tags: [], isAwardWinning: false });
-        setStep(1);
-        return 'Published successfully! Your artwork is now live.';
-      },
-      error: 'Failed to publish. Please try again.'
-    });
-  };
+    toast.success("🎉 Published successfully!");
+    
+    // Reset the UI after success
+    setFiles([]);
+    setFormData({ title: '', description: '', price: '', isForSale: false, tags: [], isAwardWinning: false });
+    setStep(1);
+
+    return result;
+
+  } catch (err) {
+    console.error(err);
+    // 3. Perfect Axios error handling
+    const errorMessage = err?.response?.data?.message || err.message || "Something went wrong!";
+    toast.error(errorMessage);
+  }
+};
+ 
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-700 relative">
