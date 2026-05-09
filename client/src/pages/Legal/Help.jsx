@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaClock } from 'react-icons/fa';
 import { User } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Header from '../../components/common/Header';
 
 function Help() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
@@ -36,21 +37,8 @@ function Help() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-zinc-100 transition-colors duration-300 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800">
-      <nav className=' w-full border-b py-4 lg:px-12 px-4 border-zinc-800 dark:border-zinc-500'>
-        <div className=' flex items-center justify-between '>
-        <Link to={"/"}>
-       <h1 className=' font-semibold text-xl font-Eagle tracking-tight'>
-        Painters' Diary
-       </h1>
-       </Link>
-       <Link to={"/account"}>
-       <div className=' dark:text-zinc-400 text-zinc-800'>
-        <User/>
-       </div>
-       </Link>
-      </div>
-       
-      </nav>
+
+      <Header/>
       {/* 1. Minimal Header */}
       <div className="w-full py-20 px-6 border-b border-zinc-100 dark:border-zinc-900">
         <div className="max-w-6xl mx-auto text-center">

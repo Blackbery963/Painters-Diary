@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Trash2, User } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Trash2, User, Loader2, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast, Toaster } from 'sonner';
 
@@ -15,9 +15,124 @@ import MediaEditor from './Components/MediaEditor';
 import DetailsStep from './Components/DetailsStep';
 import MediaStep from './Components/MediaStep';
 import { useAuth } from '../../context/Auth.context';
+import Header from '../../components/common/Header';
 import { FILTER_PRESETS, MAX_TAGS, SUGGESTED_TAGS } from './Components/constants';
 import axios from 'axios';
+import { glassShell, glassSurface } from '../../components/common/glass.js';
 
+// ─── Upload Progress Modal ─────────────────────────────────────────────────────
+const UploadProgressModal = ({ isOpen, progress, currentFile, totalFiles, status }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+      <div className={`${glassShell} rounded-[20px] p-6 max-w-md w-full`}>
+        
+        {/* Status Icon */}
+        <div className="flex flex-col items-center gap-4 mb-6">
+          {status === 'uploading' && (
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${glassSurface}`}>
+              <Loader2 size={28} className="text-zinc-900 dark:text-zinc-100 animate-spin" strokeWidth={1.8} />
+            </div>
+          )}
+          {status === 'success' && (
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${glassSurface}`}>
+              <Check size={28} className="text-emerald-500" strokeWidth={2.2} />
+            </div>
+          )}
+          {status === 'error' && (
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${glassSurface}`}>
+              <span className="text-2xl">⚠️</span>
+            </div>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 
+          className="text-[17px] font-bold text-center text-zinc-900 dark:text-zinc-100 mb-2"
+          style={{ fontFamily: "'Quicksand', sans-serif" }}
+        >
+          {status === 'uploading' && 'Publishing your work...'}
+          {status === 'success' && 'Published successfully!'}
+          {status === 'error' && 'Upload failed'}
+        </h3>
+
+        {/* Subtitle */}
+        <p 
+          className="text-[13px] text-center text-zinc-400 dark:text-zinc-500 mb-6"
+          style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
+        >
+          {status === 'uploading' && 'Please wait while we upload your files...'}
+          {status === 'success' && 'Your artwork is now live for everyone to see.'}
+          {status === 'error' && 'Something went wrong. Please try again.'}
+        </p>
+
+        {/* Progress Section - only show during upload */}
+        {status === 'uploading' && (
+          <div className="space-y-4">
+            {/* File Counter */}
+            <div className="flex items-center justify-between text-[12px]">
+              <span 
+                className="font-semibold text-zinc-500 dark:text-zinc-400"
+                style={{ fontFamily: "'Quicksand', sans-serif" }}
+              >
+                Uploading file {currentFile} of {totalFiles}
+              </span>
+              <span 
+                className="font-bold text-zinc-900 dark:text-zinc-100"
+                style={{ fontFamily: "'Quicksand', sans-serif" }}
+              >
+                {Math.round(progress)}%
+              </span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="relative w-full h-2 rounded-full bg-zinc-200/60 dark:bg-zinc-800/60 overflow-hidden">
+              <div 
+                className="absolute inset-y-0 left-0 bg-zinc-900 dark:bg-zinc-100 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            {/* Upload Stats */}
+            <div className={`grid grid-cols-2 gap-2 p-3 rounded-[14px] ${glassSurface}`}>
+              <div className="text-center">
+                <p 
+                  className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-600 mb-0.5"
+                  style={{ fontFamily: "'Quicksand', sans-serif" }}
+                >
+                  Completed
+                </p>
+                <p 
+                  className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100"
+                  style={{ fontFamily: "'Quicksand', sans-serif" }}
+                >
+                  {currentFile - 1}/{totalFiles}
+                </p>
+              </div>
+              <div className="text-center">
+                <p 
+                  className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-600 mb-0.5"
+                  style={{ fontFamily: "'Quicksand', sans-serif" }}
+                >
+                  Remaining
+                </p>
+                <p 
+                  className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100"
+                  style={{ fontFamily: "'Quicksand', sans-serif" }}
+                >
+                  {totalFiles - currentFile + 1}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Upload Component ─────────────────────────────────────────────────────
 const Upload = () => {
   const [step, setStep] = useState(1);
   const [files, setFiles] = useState([]);
@@ -25,7 +140,17 @@ const Upload = () => {
   const [formData, setFormData] = useState({ title: '', description: '', price: '', isForSale: false, tags: [], isAwardWinning: false });
   const [tagInput, setTagInput] = useState('');
   
+  // Upload progress state
+  const [uploadProgress, setUploadProgress] = useState({
+    isOpen: false,
+    progress: 0,
+    currentFile: 1,
+    totalFiles: 0,
+    status: 'uploading' // 'uploading' | 'success' | 'error'
+  });
+  
   const fileInputRef = useRef(null);
+  const { accessToken } = useAuth();
 
   // --- Handlers ---
   const handleFileSelect = (e) => {
@@ -38,7 +163,6 @@ const Upload = () => {
         edits: { trim: { start: 0, end: 100 }, filters: FILTER_PRESETS.normal }
       }));
       setFiles(prev => [...prev, ...newFiles]);
-      // ✅ Toast notification when files are successfully added
       toast.success(`${newFiles.length} file(s) added successfully`);
     }
   };
@@ -63,7 +187,6 @@ const Upload = () => {
   };
 
   const handleNextStepClick = () => {
-    // ✅ Toast notification explicitly telling user why they can't proceed
     if (files.length === 0) {
       toast.error('Please select at least one media file to continue');
       return;
@@ -71,90 +194,120 @@ const Upload = () => {
     setStep(2);
   };
 
+  const handlePublish = async () => {
+    try {
+      if (!accessToken) throw new Error("Not logged in");
 
-const { accessToken } = useAuth();
-
-const handlePublish = async () => {
-  try {
-    if (!accessToken) throw new Error("Not logged in");
-
-    // Validation
-    if (files.length === 0) {
-      toast.error("Upload at least one artwork!");
-      return;
-    }
-    if (!formData.title.trim()) {
-      toast.error("Every masterpiece needs a title!");
-      return;
-    }
-
-    const uploadData = new FormData();
-   
-    uploadData.append("title",          formData.title);
-    uploadData.append("description",    formData.description);
-    uploadData.append("isForSale",      String(formData.isForSale));
-    uploadData.append("isAwardWinning", String(formData.isAwardWinning));
-    uploadData.append("price",          String(formData.price || 0));
-    uploadData.append("tags",           JSON.stringify(formData.tags));
-   
-    files.forEach((f) => uploadData.append("media", f.file));
-   
-    // 1. PERFECT AXIOS SYNTAX: axios.post(URL, DATA, CONFIG)
-    // (Note: Double check if your backend is on port 3000 or 5000!)
-    const res = await axios.post("http://localhost:3000/api/upload/create", 
-      uploadData, // The FormData goes directly here as the 2nd argument
-      {
-        headers: { 
-          Authorization: `Bearer ${accessToken}` 
-          // Note: Axios automatically sets 'Content-Type: multipart/form-data' 
-          // for you when it sees a FormData object. Do not set it manually!
-        }
+      // Validation
+      if (files.length === 0) {
+        toast.error("Upload at least one artwork!");
+        return;
       }
-    );
-   
-    // 2. Fetch leftovers removed! Axios already checked for errors and parsed the JSON.
-    const result = res.data; 
-    
-    toast.success("🎉 Published successfully!");
-    
-    // Reset the UI after success
-    setFiles([]);
-    setFormData({ title: '', description: '', price: '', isForSale: false, tags: [], isAwardWinning: false });
-    setStep(1);
+      if (!formData.title.trim()) {
+        toast.error("Every masterpiece needs a title!");
+        return;
+      }
 
-    return result;
+      // Open progress modal
+      setUploadProgress({
+        isOpen: true,
+        progress: 0,
+        currentFile: 1,
+        totalFiles: files.length,
+        status: 'uploading'
+      });
 
-  } catch (err) {
-    console.error(err);
-    // 3. Perfect Axios error handling
-    const errorMessage = err?.response?.data?.message || err.message || "Something went wrong!";
-    toast.error(errorMessage);
-  }
-};
- 
+      const uploadData = new FormData();
+      uploadData.append("title",          formData.title);
+      uploadData.append("description",    formData.description);
+      uploadData.append("isForSale",      String(formData.isForSale));
+      uploadData.append("isAwardWinning", String(formData.isAwardWinning));
+      uploadData.append("price",          String(formData.price || 0));
+      uploadData.append("tags",           JSON.stringify(formData.tags));
+      
+      files.forEach((f) => uploadData.append("media", f.file));
+
+      // Upload with progress tracking
+        const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/post/create`, 
+        uploadData, 
+        {
+          headers: { 
+            Authorization: `Bearer ${accessToken}` 
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            const currentFileIndex = Math.min(
+              Math.ceil((percentCompleted / 100) * files.length), 
+              files.length
+            );
+            
+            setUploadProgress(prev => ({
+              ...prev,
+              progress: percentCompleted,
+              currentFile: currentFileIndex
+            }));
+          }
+        }
+      );
+
+      // Success state
+      setUploadProgress(prev => ({
+        ...prev,
+        progress: 100,
+        status: 'success'
+      }));
+
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        setUploadProgress({ isOpen: false, progress: 0, currentFile: 1, totalFiles: 0, status: 'uploading' });
+        
+        // Reset form
+        setFiles([]);
+        setFormData({ title: '', description: '', price: '', isForSale: false, tags: [], isAwardWinning: false });
+        setStep(1);
+        
+        toast.success("Published successfully!");
+      }, 2000);
+
+      return res.data;
+
+    } catch (err) {
+      console.error(err);
+      
+      // Error state
+      setUploadProgress(prev => ({
+        ...prev,
+        status: 'error'
+      }));
+
+      // Close modal after 3 seconds
+      setTimeout(() => {
+        setUploadProgress({ isOpen: false, progress: 0, currentFile: 1, totalFiles: 0, status: 'uploading' });
+      }, 3000);
+
+      const errorMessage = err?.response?.data?.message || err.message || "Something went wrong!";
+      toast.error(errorMessage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-700 relative">
       <Toaster position="top-center" richColors theme="system" />
       
+      {/* Upload Progress Modal */}
+      <UploadProgressModal 
+        isOpen={uploadProgress.isOpen}
+        progress={uploadProgress.progress}
+        currentFile={uploadProgress.currentFile}
+        totalFiles={uploadProgress.totalFiles}
+        status={uploadProgress.status}
+      />
+      
       {editingFile && <MediaEditor file={editingFile} onClose={() => setEditingFile(null)} onSave={saveEdits} />}
+      
+      <Header/>
 
-      <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to={"/"}>
-            <div className="flex items-center gap-2">
-              <span className="text-lg lg:text-2xl font-bold tracking-tight font-Eagle">Painters' Diary</span>
-            </div>
-          </Link>
-          <Link to={"/account"}>
-            <button className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300">
-              <User size={20} />
-            </button>
-          </Link>
-        </div>
-      </nav>
-
-      <div className="max-w-4xl mx-auto px-6 py-10 pb-32">
+      <div className="max-w-4xl mx-auto px-6 py-10 pb-32 pt-24">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-light tracking-tight mb-2">
             {step === 1 ? 'Curate your gallery' : 'Tell the story behind your work'}
@@ -180,7 +333,7 @@ const handlePublish = async () => {
             }}
             className="text-xs font-medium text-red-500 transition-colors uppercase tracking-wider flex items-center gap-1 justify-center"
           >
-          <Trash2 size={12}/> Discard
+            <Trash2 size={12}/> Discard
           </button>
         </div>
 
@@ -204,14 +357,26 @@ const handlePublish = async () => {
           {step === 1 ? (
              <button 
                onClick={handleNextStepClick}
-               /* I removed 'disabled={files.length === 0}' here so the button is actually clickable and the toast can pop up! */
                className={`px-6 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${files.length > 0 ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:shadow-lg' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400'}`}
              >
                Next Step <ChevronRight size={16} />
              </button>
           ) : (
-            <button onClick={handlePublish} className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-8 py-2.5 rounded-lg text-sm font-medium hover:shadow-lg transition-all flex items-center gap-2">
-              Publish <ChevronRight size={16} />
+            <button 
+              onClick={handlePublish} 
+              disabled={uploadProgress.isOpen}
+              className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-8 py-2.5 rounded-lg text-sm font-medium hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploadProgress.isOpen ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                <>
+                  Publish <ChevronRight size={16} />
+                </>
+              )}
             </button>
           )}
         </div>

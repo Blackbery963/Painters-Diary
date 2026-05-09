@@ -14,6 +14,7 @@ import {toast, Toaster} from 'sonner'
 import LogoutModel from '../../components/models/model.logout';
 
 import { useTheme } from '../../context/Theme.context.jsx';
+import Header from '../../components/common/Header.jsx';
 
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -58,9 +59,9 @@ const Settings = () => {
     <h3 className="px-4 mb-2 mt-8 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
       {title}
     </h3>
-  );
+   );
 
-  const Toggle = ({ checked, onChange }) => (
+    const Toggle = ({ checked, onChange }) => (
     <button 
       onClick={(e) => {
         e.preventDefault(); 
@@ -185,6 +186,7 @@ const Settings = () => {
           </Link>
         </div>
       </header>
+      {/* <Header/> */}
 
       {/* --- CONTENT --- */}
       <div className="max-w-2xl mx-auto px-4 pb-24 pt-2">

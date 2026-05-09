@@ -123,7 +123,7 @@
 
 import { Media }      from "../models/media.model.js";
 import { sortTags }   from "../utils/tagSorter.js";
-import { uploadMedia } from "../service/cloudinary.js";
+import { uploadMedia } from "../service/cloudinary/media.service.js";
  
 export const createPost = async (req, res) => {
   try {
@@ -155,7 +155,7 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: "At least one media file is required" });
     }
  
-    // ── 4. Upload all files to Cloudinary in parallel ────────────────────
+    // ── 4. Uplo ad all files to Cloudinary in parallel ────────────────────
     const uploadResults = await Promise.all(
       files.map((file) => uploadMedia(file.path))
     );

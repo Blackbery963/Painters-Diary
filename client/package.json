@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.0",
     "axios": "^1.13.6",
+    "emoji-picker-react": "^4.18.0",
     "feather-icons": "^4.29.2",
     "framer-motion": "^12.34.3",
     "install": "^0.13.0",
@@ -22,6 +23,7 @@
     "react-easy-crop": "^5.5.7",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.13.0",
+    "recharts": "^3.8.1",
     "sonner": "^2.0.7"
   },
   "devDependencies": {

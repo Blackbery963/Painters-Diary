@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { User } from 'lucide-react';
+import Header from '../../components/common/Header';
 
 const TermsAndConditions = () => {
   const effectiveDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -109,18 +110,7 @@ const TermsAndConditions = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-zinc-400 font-serif leading-loose text-justify selection:bg-zinc-200 dark:selection:bg-zinc-800">
       
-      <header className="fixed top-0 left-0 w-full h-16  border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-6 z-50">
-        <div className="flex items-center">
-          <Link to="/" className="text-lg font-bold tracking-tight text-black dark:text-white font-Eagle">
-            Painters' Diary
-          </Link>
-        </div>
-        <div>
-          <Link to="/Account" className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors">
-            <User size={18} />
-          </Link>
-        </div>
-      </header>
+      <Header/>
 
       {/* HEADER - STRICTLY UTILITARIAN */}
       <header className="w-full py-16 px-8 border-b border-zinc-200 dark:border-zinc-900 bg-white dark:bg-black sticky top-0 z-50 opacity-95">

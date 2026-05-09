@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import Header from './components/Header';
+
+import Header from './components/ProfleHeader';
 import CoverSection from './components/CoverSection';
 import ProfileInfo from './components/ProfileInfo';
-import BentoGrid from './components/BentoGrid';
+import UserCollection from './UserCollection';
 
 // --- MOCK DATA ---
 const MOCK_USER = {
@@ -42,33 +43,7 @@ export default function Profile() {
           </div>
 
           {/* RIGHT: Content & Bento Grid */}
-          <div className="lg:col-span-9">
-            {/* Custom Tabs */}
-            <div className="flex items-center justify-center lg:justify-start gap-8 border-b border-zinc-200 dark:border-zinc-800 mb-6 transition-colors duration-300">
-              {['Artworks', 'Videos', 'Store'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab.toLowerCase())}
-                  className={`py-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors duration-200 ${
-                    activeTab === tab.toLowerCase()
-                      ? 'border-zinc-900 text-zinc-900 dark:border-white dark:text-white'
-                      : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            {/* Grid Area */}
-            {activeTab === 'artworks' ? (
-              <BentoGrid />
-            ) : (
-              <div className="text-center py-20 text-zinc-500 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-2xl transition-colors duration-300">
-                No {activeTab} yet.
-              </div>
-            )}
-          </div>
+          <UserCollection/>
           
         </div>
       </main>

@@ -25,19 +25,12 @@ const diarySchema = new Schema(
             required: true
         },
 
-        // ===== Sketches with captions =====
+        // ===== Sketches =====
         sketches: [
-            {
-                media: {
-                    type: Schema.Types.ObjectId,
-                    ref: "Media",
-                    required: true
-                },
-                caption: {
-                    type: String,
-                    maxlength: 200,
-                    trim: true
-                }
+            {    
+                type: String,
+                required: true
+
             }
         ],
 

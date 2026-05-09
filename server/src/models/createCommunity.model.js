@@ -40,8 +40,9 @@ const communitySchema = new Schema({
     // UI-Friendly Rules Array
     rules: [
         {
-            title: { type: String, required: true, trim: true },
-            description: { type: String, trim: true, default: "" }
+            type: String,
+            trim: true,
+            default: ''
         }
     ],
 
@@ -59,6 +60,7 @@ const communitySchema = new Schema({
         type: Number, 
         default: 1 // The creator is automatically the first member!
     },
+    
     postsCount: { 
         type: Number, 
         default: 0 

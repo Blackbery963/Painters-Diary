@@ -2,9 +2,10 @@ import express from 'express';
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.routes.js';
-import twofaRoutes from './routes/twofa.routes.js'
-import uploadRoutes from './routes/upload.routes.js';
-import { multerErrorHandler } from './middlewares/upload.middleware.js';
+import twofaRouter from './routes/twofa.routes.js'
+import postRouter from './routes/post.routes.js';
+import profileRouter from './routes/profile.routes.js';
+import diaryRouter from './routes/diary.routes.js';
 
 const app = express ();
 
@@ -25,13 +26,20 @@ app.use(cookieParser())
 
 // app.get("/", (req, res) => res.send("Api working fine "))
 
+// for all types of authentication routes, we can add it here when we have the controller and routes ready
 app.use("/api/auth", authRouter)
 
-app.use("/api/2fa", twofaRoutes)
+// for two factor authentication routes, we can add it here when we have the controller and routes ready
+app.use("/api/2fa", twofaRouter)
 
-app.use(multerErrorHandler)
+//for post routes and we can add it here when we have the controllr and the routes ready
+app.use("/api/post", postRouter)
 
-app.use("/api/upload", uploadRoutes)
+// for two profile factor routes, we can add it here when we have the controller and routes ready
+app.use("/api/profile", profileRouter)
+
+// for diary routes, we can add it here when we have the controller and routes ready
+app.use("/api/diary", diaryRouter)
 
 
 

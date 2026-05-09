@@ -1,3 +1,5 @@
+// for the main database connection and server setup
+
 import dotenv from "dotenv"
 import connectDB from "./db/database.js"
 import app from "./app.js"

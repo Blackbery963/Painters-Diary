@@ -6,7 +6,8 @@ import Preloader from "./components/common/Preloader";
 import OfflinePage from "./components/common/Offline";
 
 // Pages
-import LandingPage from "./pages/Home/LandingPage";
+// import LandingPage from "./pages/Home/LandingPage";
+import Home from "./pages/Home/Home"
 
 // for authentication 
 import Signup from "./pages/Auth/Signup";
@@ -18,7 +19,11 @@ import Enable2FA from "./pages/Auth/2fa/Enable2FA";
 
 // important pages
 import Profile from "./pages/Profile/Profile";
-import EditProfile from "./pages/Profile/EditProfile/EditProfile";
+import EditProfile from "./pages/Profile/EditProfile";
+
+//features related pages
+import Dashboard from "./features/dashboard/pages/Dashboard";
+import StudioManager from "./features/studio/pages/StudioManager";
 
 import Upload from "./pages/Upload/Upload";
 import Settings from "./pages/Settings/Settings";
@@ -32,6 +37,18 @@ import SecurityPolicy from "./pages/Legal/ScurityPolicy";
 import About from "./pages/Legal/About";
 
 import ProtectedRoute from "./middleware/ProtectedRoute.middleware";
+
+import SearchPage from "./pages/Search/Search";
+import GalleryPage from "./pages/Gallery/Gallery";
+import Saved from "./pages/Save/SavedFiles";
+import { ImageOff } from "lucide-react";
+import FeedbackPage from "./pages/Legal/Feedback";
+import MiniChatBar from "./pages/Chat/MiniChatBar";
+import ChatApp from "./pages/Chat/Chat";
+import JournalPage from "./pages/Journal/Journal";
+import CreateJournal from "./pages/Journal/CreateJournal";
+import Artist from "./pages/Artist/Artist";
+import CreateCommunityPage from "./pages/Community/CreateCommunity";
 
 // ─── Connection quality check ─────────────────────────────────────────────────
 // Pings a tiny resource and measures round-trip time.
@@ -118,7 +135,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/"                          element={<LandingPage />} />
+        <Route path="/"                          element={<Home />} />
         
         {/* Auth */}
 
@@ -134,6 +151,11 @@ export default function App() {
         {/* App */}
         <Route path="/profile"                   element={<Profile />} />
         <Route path="/profile/edit"              element={<EditProfile />} />
+       
+        <Route path="/feature/dashboard"         element={<Dashboard/>}/>
+        <Route path="/feature/studio-manager"    element={<StudioManager/>}/>
+
+
 
         <Route path="/settings"                  element={<Settings />} />
         <Route path="/upload"                    element={<Upload />} />
@@ -145,7 +167,33 @@ export default function App() {
         <Route path="/legal/terms"               element={<TermsAndConditions />} />
         <Route path="/legal/privacy"             element={<SecurityPolicy />} />
         <Route path="/legal/cookies"             element={<CookiePolicy />} />
+        <Route path="/legal/feedback"            element={<FeedbackPage/>}/>
+
+        {/* Chat and chat bar routes */}
+        <Route path="/chat"                      element={<ChatApp/>}/>
+
+        {/* Search Pages  */}
+        <Route path="/search"                    element={<SearchPage/>}/>
+
+        {/* Gallery Page */}
+        <Route path="/gallery"                   element={<GalleryPage/>}/>
+
+        {/* Saved page */}
+        <Route path="/saved"                     element={<Saved />} />
+
+        {/* Finding user according to your interest */}
+        <Route path="/discover-artist"                    element={<Artist/>}/>
+
+        {/* for the diaries or journals  */}
+        <Route path="/journal"                   element={<JournalPage/>}/>
+        <Route path="/journal/create"            element={<CreateJournal/>}/>
+
+
+
+        {/* For community related routes  */}
+        <Route path="/community/create"         element={<CreateCommunityPage/>}/>
         </Route>
+
       </Routes>
     </Router>
   );

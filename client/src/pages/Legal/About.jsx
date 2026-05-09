@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,6 +5,7 @@ import {
   User, Image as ImageIcon, Palette, Globe, BookOpen, 
   Feather, Layers, Zap, ArrowRight, PenTool, History 
 } from 'lucide-react';
+import Header from '../../components/common/Header';
 
 function About() {
   
@@ -25,32 +24,8 @@ function About() {
     <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-zinc-200 font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800 transition-colors duration-500">
       
       {/* --- HEADER (Clean & Minimal) --- */}
-      <header className='fixed top-0 w-full bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-900 z-50'>
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <Link to='/' className='flex items-center gap-2 group'>
-            <div className="w-7 h-7 bg-black dark:bg-white rounded-md flex items-center justify-center text-white dark:text-black font-serif font-bold text-lg group-hover:rotate-3 transition-transform">P</div>
-            <span className='text-lg font-bold font-Eagle tracking-tight text-black dark:text-white '>Painters' Diary</span>
-          </Link>
-
-          {/* Actions (Only Account & Gallery) */}
-          <div className='flex items-center gap-3'>
-            <Link to='/Landscape'>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-                <ImageIcon size={14} />
-                <span className="hidden sm:inline">Gallery</span>
-              </button>
-            </Link>
-            <Link to='/Account'>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black hover:opacity-80 transition-opacity">
-                <User size={14} />
-                <span className="hidden sm:inline">Account</span>
-              </button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
+      <Header/>
+      
       <main className="pt-24 pb-20 px-4">
         
         {/* --- HERO SECTION (Compact) --- */}
