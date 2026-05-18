@@ -4,6 +4,7 @@ const communitySchema = new Schema({
     name: {
         type: String,
         required: true,
+        sparse: true,
         unique: true, // Community names (like Subreddits) should generally be unique
         maxLength: [100, "Community name cannot exceed 100 characters"],
         trim: true
@@ -51,7 +52,9 @@ const communitySchema = new Schema({
         {
             type: String,
             lowercase: true,
-            trim: true
+            trim: true,
+            default: ''
+
         }
     ],
 
@@ -106,3 +109,5 @@ communitySchema.index(
 );
 
 export const Community = mongoose.model("Community", communitySchema);
+
+

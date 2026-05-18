@@ -277,8 +277,8 @@ export default function DiscoverPeople() {
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/40 dark:bg-zinc-950 border-b border-white/20 dark:border-zinc-800/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+        <header className="sticky w-full top-0 z-40 backdrop-blur-2xl bg-white/40 dark:bg-zinc-950 ">
+          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 py-4 border-b border-white/20 dark:border-zinc-800/30">
             {/* Logo and user button  */}
           <div className=' flex items-center justify-between '>
           <Link to={"/"}>

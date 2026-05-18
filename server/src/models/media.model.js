@@ -57,6 +57,12 @@ const mediaSchema = new Schema({
         min: 0, //price can't be negative
         required: function() { return this.forSale === true; }
     },
+    stocks:{
+        type: Number,
+        min: 1, //At least 1 stock must be avilavle if it's for sale
+        required: function() {return this.forSale === true;
+        }
+    },
     currency: { 
         type: String, 
         enum: ["USD", "INR", "EUR", "GBP"], // Added strict currency enforcement

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
+import { getProfileInfo } from "../../../service/profile.service";
 
 // --- STATIC DATA ---
 // Replaced Pexels API with high-quality static fallbacks
@@ -74,6 +75,56 @@ const InfiniteMarquee = ({ images, direction = "left", speed = 40 }) => {
 const Hero = () => {
   const [greetingText, setGreetingText] = useState("Where Creativity Thrives");
   const [isGridReady, setIsGridReady] = useState(false);
+
+const [userName, setUserName] = useState("");
+const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+
+useEffect(() => {
+  const getUserInfo = async () => {
+    try {
+      const data = await getProfileInfo();
+
+      if (data?.user?.username) {
+        setUserName(data.user.username);
+        setIsAuthenticated(true);
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch user info", error);
+      setIsAuthenticated(false);
+    }
+  };
+
+  getUserInfo();
+}, []);
+
+useEffect(() => {
+  if (isAuthenticated && userName) {
+    const formattedName =
+      userName.charAt(0).toUpperCase() +
+      userName.slice(1);
+
+    setGreetingText(
+      getGreeting(formattedName)
+    );
+
+  } else {
+    setGreetingText(
+      "Where Creativity Thrives"
+    );
+  }
+
+  const timer = setTimeout(
+    () => setIsGridReady(true),
+    100
+  );
+
+  return () => clearTimeout(timer);
+
+}, [userName, isAuthenticated]);
+
+
 
   // User Name & Greeting Logic
   useEffect(() => {
@@ -154,7 +205,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
         >
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight text-gray-900 dark:text-white mb-6 drop-shadow-sm">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight text-gray-900 dark:text-white mb-6 drop-shadow-sm font-Quicksand">
             {greetingText}
           </h1>
           <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">

@@ -133,7 +133,7 @@ const profileHeader = () => {
                 >
                   {/* User Info Section */}
                   <div className="p-4 border-b border-zinc-200/50 dark:border-zinc-700/50 bg-white/40 dark:bg-zinc-800/40">
-                    <p className="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{user?.username}</p>
+                    <p className="font-semibold text-zinc-900 dark:text-zinc-100 truncate font-Quicksand">{user?.username}</p>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">{user?.email}</p>
                   </div>
 

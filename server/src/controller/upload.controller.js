@@ -188,6 +188,7 @@ export const createPost = async (req, res) => {
       generalTags,
       forSale:   isForSale === "true" || isForSale === true,
       price:     isForSale ? Number(price) : undefined,
+      stocks:    isForSale ? 1 : 0, // Default to 1 stock if for sale, otherwise 0  
       isAwardWinning: isAwardWinning === "true" || isAwardWinning === true,
     });
  

@@ -6,6 +6,7 @@ import twofaRouter from './routes/twofa.routes.js'
 import postRouter from './routes/post.routes.js';
 import profileRouter from './routes/profile.routes.js';
 import diaryRouter from './routes/diary.routes.js';
+import communityRouter from './routes/community.routes.js';
 
 const app = express ();
 
@@ -41,6 +42,7 @@ app.use("/api/profile", profileRouter)
 // for diary routes, we can add it here when we have the controller and routes ready
 app.use("/api/diary", diaryRouter)
 
+app.use("/api/community", communityRouter)
 
 
 export default app;

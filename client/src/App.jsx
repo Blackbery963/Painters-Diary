@@ -49,6 +49,12 @@ import JournalPage from "./pages/Journal/Journal";
 import CreateJournal from "./pages/Journal/CreateJournal";
 import Artist from "./pages/Artist/Artist";
 import CreateCommunityPage from "./pages/Community/CreateCommunity";
+import Community from "./pages/Community/Community";
+import CommunityDashboard from "./pages/Community/CommunityDashboard";
+import StorePage from "./pages/Store/Store";
+import OrderDashboard from "./pages/OrderDashboard/OrderDashboard";
+import NotificationsPage from "./pages/Notification/Notification";
+import CartDashboard from "./pages/CartDashboard/CartDashboard";
 
 // ─── Connection quality check ─────────────────────────────────────────────────
 // Pings a tiny resource and measures round-trip time.
@@ -182,7 +188,7 @@ export default function App() {
         <Route path="/saved"                     element={<Saved />} />
 
         {/* Finding user according to your interest */}
-        <Route path="/discover-artist"                    element={<Artist/>}/>
+        <Route path="/discover-artist"           element={<Artist/>}/>
 
         {/* for the diaries or journals  */}
         <Route path="/journal"                   element={<JournalPage/>}/>
@@ -191,7 +197,16 @@ export default function App() {
 
 
         {/* For community related routes  */}
+        <Route path="/community"                element={<Community/>}/>
         <Route path="/community/create"         element={<CreateCommunityPage/>}/>
+        <Route path="/community/dashboard"      element={<CommunityDashboard/>}/>
+
+
+        {/* for store page */}
+        <Route path="/artstore"                 element={<StorePage/>}/>
+        <Route path="/order-dashboard"          element={<OrderDashboard/>}/>
+        <Route path="/notification"             element={<NotificationsPage/>}/>
+        <Route path="/cart-dashboard"           element={<CartDashboard/>}/>
         </Route>
 
       </Routes>

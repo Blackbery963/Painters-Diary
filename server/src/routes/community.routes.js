@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { upload } from "../middlewares/upload.middleware";
-import * as communityController from '../controller/community.controller'
-import authMiddleware from "../middlewares/auth.middleware";
+import { upload } from "../middlewares/upload.middleware.js";
+import * as communityController from '../controller/community.controller.js'
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 const communityRouter = Router();
 
-communityController.post(
+communityRouter.post(
     "/create-community",
     upload.fields([
         {name: "logo", maxCount: 1},

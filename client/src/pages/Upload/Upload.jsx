@@ -223,6 +223,7 @@ const Upload = () => {
       uploadData.append("isForSale",      String(formData.isForSale));
       uploadData.append("isAwardWinning", String(formData.isAwardWinning));
       uploadData.append("price",          String(formData.price || 0));
+      uploadData.append("stocks",         String(formData.isForSale ? 1 : 0)); // Default to 1 stock if for sale, otherwise 0
       uploadData.append("tags",           JSON.stringify(formData.tags));
       
       files.forEach((f) => uploadData.append("media", f.file));
@@ -263,7 +264,7 @@ const Upload = () => {
         
         // Reset form
         setFiles([]);
-        setFormData({ title: '', description: '', price: '', isForSale: false, tags: [], isAwardWinning: false });
+        setFormData({ title: '', description: '', price: '', stocks:'', isForSale: false, tags: [], isAwardWinning: false });
         setStep(1);
         
         toast.success("Published successfully!");
